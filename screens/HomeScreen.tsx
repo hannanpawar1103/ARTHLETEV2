@@ -43,6 +43,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { addPerformedExercises, getPerformedExercises } from '../utils/exerciseTracker';
 import { useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import AuthContext from '../context/AuthContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -57,6 +58,12 @@ function formatExerciseName(name) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+// Define navigation type
+type RootStackParamList = {
+  Login: undefined;
+  // add other routes if needed
+};
 
 const App = ({ isNightMode, setIsNightMode }) => {
   const [didConfig, setDidConfig] = useState(false);
@@ -92,7 +99,7 @@ const App = ({ isNightMode, setIsNightMode }) => {
   const [cleanPercent, setCleanPercent] = useState(0);
 
   const isFocused = useIsFocused();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const { logout } = useContext(AuthContext);
 
   // Add level durations mapping
@@ -1922,7 +1929,7 @@ useFocusEffect(
       {/* Profile Button and Motivational Quote */}
       <View style={styles.profileSection}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity style={styles.profileButton} onPress={async () => { await logout(); navigation.replace('Login'); }}>
+        <TouchableOpacity style={styles.profileButton} onPress={async () => { await logout(); navigation.navigate('Login'); }}>
           <Text style={styles.profileIcon}>👤</Text>
         </TouchableOpacity>
             <TouchableOpacity
