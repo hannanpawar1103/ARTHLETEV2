@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 
-import { BASE_URL } from '../baseUrl';
+import { BASE_URL } from '../src/api.js';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 
@@ -41,6 +41,9 @@ import PlanSection from '../components/PlanSection';
 import PropTypes from 'prop-types';
 import { useIsFocused } from '@react-navigation/native';
 import { addPerformedExercises, getPerformedExercises } from '../utils/exerciseTracker';
+import { useContext } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import AuthContext from '../context/AuthContext';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -89,6 +92,8 @@ const App = ({ isNightMode, setIsNightMode }) => {
   const [cleanPercent, setCleanPercent] = useState(0);
 
   const isFocused = useIsFocused();
+  const navigation = useNavigation();
+  const { logout } = useContext(AuthContext);
 
   // Add level durations mapping
   const levelDurations = {
@@ -1917,7 +1922,7 @@ useFocusEffect(
       {/* Profile Button and Motivational Quote */}
       <View style={styles.profileSection}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity style={styles.profileButton} onPress={() => showAlert('Profile', 'Profile button pressed!')}>
+        <TouchableOpacity style={styles.profileButton} onPress={async () => { await logout(); navigation.replace('Login'); }}>
           <Text style={styles.profileIcon}>👤</Text>
         </TouchableOpacity>
             <TouchableOpacity

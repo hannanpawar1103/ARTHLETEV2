@@ -1,7 +1,7 @@
 import React, {createContext, useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import {BASE_URL} from '../baseUrl.js';
+import {BASE_URL} from '../src/api.js';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -49,6 +49,7 @@ export const AuthProvider = ({children}) => {
   // Login User
 
   const login = async (email, password) => {
+    console.log('Login attempt:', {email, password});
     try {
       const res = await axios.post(`${BASE_URL}/users/login`, {
         email,

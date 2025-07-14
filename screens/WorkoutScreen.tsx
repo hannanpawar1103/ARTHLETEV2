@@ -17,7 +17,7 @@ import {
   TextInput,
 } from 'react-native';
 import axios from 'axios';
-import { BASE_URL } from '../baseUrl';
+import { BASE_URL } from '../src/api.js';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import {
