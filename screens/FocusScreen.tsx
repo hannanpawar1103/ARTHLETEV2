@@ -39,61 +39,12 @@ import { Svg, Circle, Path } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { addPerformedExercises } from '../utils/exerciseTracker';
+import AuthContext from '../context/AuthContext.js';
+import { useContext } from 'react';
+
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-
-const playIconColors = ['#C7B8F9', '#B8F9D7', '#F9B8B8', '#F9EBB8', '#B8E6F9'];
-const formatDuration = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-};
-   const userId = "6853e136a4d5b09d329515ff";
-// Add this helper function near the top, after imports:
-function formatExerciseName(name) {
-  return name
-    .replace(/[_-]/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// ArcProgress component for semi-circular progress bar
-function ArcProgress({ progress, max, size = 80, strokeWidth = 10, color = '#4CAF50', bgColor = '#eee' }) {
-  const radius = (size - strokeWidth) / 2;
-  const center = size / 2;
-  const angle = Math.PI * (progress / max);
-  const x = center + radius * Math.cos(Math.PI - angle);
-  const y = center - radius * Math.sin(Math.PI - angle);
-  const largeArcFlag = progress > max / 2 ? 1 : 0;
-  const arcPath = `M ${center - radius},${center} A ${radius},${radius} 0 ${largeArcFlag} 1 ${x},${y}`;
-  return (
-    <View style={{ width: size, height: size / 2, alignItems: 'center', justifyContent: 'center' }}>
-      <Svg width={size} height={size / 2}>
-        {/* Background arc */}
-        <Path
-          d={`M ${center - radius},${center} A ${radius},${radius} 0 1 1 ${center + radius},${center}`}
-          stroke={bgColor}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        {/* Foreground arc */}
-        <Path
-          d={arcPath}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-      </Svg>
-      {/* Center number */}
-      <View style={{ position: 'absolute', top: size / 4 - 18, left: 0, width: size, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 28, fontWeight: 'bold', color }}>{progress.toString().padStart(2, '0')}</Text>
-      </View>
-    </View>
-  );
-}
 
 const App = ({ isNightMode, setIsNightMode, inFocusMode, setInFocusMode }) => {
   const [didConfig, setDidConfig] = React.useState(false);
@@ -147,6 +98,22 @@ const App = ({ isNightMode, setIsNightMode, inFocusMode, setInFocusMode }) => {
     performer: 60,
     advanced: 120
   };
+
+  const [userId, setUserId] = useState<string | null>(null);
+  const { setUser } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem('tempUserId');
+        setUserId(id);
+      } catch (error) {
+        console.error('Error fetching tempUserId:', error);
+      }
+    };
+    fetchUserId();
+  }, []);
+  
 
   // Plan exercise data (example)
   const planData = [
@@ -940,9 +907,9 @@ const handleEventWithoutApi = async (summary) => {
     setTimeout(() => {
       setSummaryMessage(summary);
 
-      let parsed = null;
+      let parsed: any = null;
       try {
-        parsed = JSON.parse(summary);
+        parsed = JSON.parse(summary) as { exercises?: any[] };
       } catch (e) {
         console.error("❌ Failed to parse summary JSON:", e);
         parsed = null;
@@ -1015,9 +982,9 @@ const handleEvent = async (summary) => {
     setTimeout(() => {
       setSummaryMessage(summary);
 
-      let parsed = null;
+      let parsed: any = null;
       try {
-        parsed = JSON.parse(summary);
+        parsed = JSON.parse(summary) as { exercises?: any[] };
       } catch (e) {
         parsed = null;
       }
@@ -2038,6 +2005,55 @@ const handleEvent = async (summary) => {
     }, 1000); // Increased delay to 1 second
   };
 
+  const playIconColors = ['#C7B8F9', '#B8F9D7', '#F9B8B8', '#F9EBB8', '#B8E6F9'];
+  const formatDuration = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+  function formatExerciseName(name) {
+    return name
+      .replace(/[_-]/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  // ArcProgress component for semi-circular progress bar
+  function ArcProgress({ progress, max, size = 80, strokeWidth = 10, color = '#4CAF50', bgColor = '#eee' }) {
+    const radius = (size - strokeWidth) / 2;
+    const center = size / 2;
+    const angle = Math.PI * (progress / max);
+    const x = center + radius * Math.cos(Math.PI - angle);
+    const y = center - radius * Math.sin(Math.PI - angle);
+    const largeArcFlag = progress > max / 2 ? 1 : 0;
+    const arcPath = `M ${center - radius},${center} A ${radius},${radius} 0 ${largeArcFlag} 1 ${x},${y}`;
+    return (
+      <View style={{ width: size, height: size / 2, alignItems: 'center', justifyContent: 'center' }}>
+        <Svg width={size} height={size / 2}>
+          {/* Background arc */}
+          <Path
+            d={`M ${center - radius},${center} A ${radius},${radius} 0 1 1 ${center + radius},${center}`}
+            stroke={bgColor}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          {/* Foreground arc */}
+          <Path
+            d={arcPath}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+        </Svg>
+        {/* Center number */}
+        <View style={{ position: 'absolute', top: size / 4 - 18, left: 0, width: size, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ fontSize: 28, fontWeight: 'bold', color }}>{progress.toString().padStart(2, '0')}</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.safeArea, isNightMode && { backgroundColor: '#111' }]}>
       <View style={[styles.mainContainer, { flex: 1, marginTop: 4, paddingBottom: 32, justifyContent: 'flex-start' }, isNightMode && { backgroundColor: '#111' }]}>
@@ -2957,7 +2973,7 @@ const handleEvent = async (summary) => {
     setIsLoading(true);
     try {
       
-      var res = await configure("public_live_a5jSYbzaDk7sgalguc");
+      var res = await configure("public_live_J2wIJ3BdzItV7gCSjI");
       console.log("Configuration successful:", res);
       setIsLoading(false);
       setDidConfig(true);
@@ -3008,7 +3024,7 @@ const handleEvent = async (summary) => {
       setSummaryMessage(result.summary);
       let parsed: any = null;
       try {
-        parsed = JSON.parse(result.summary);
+        parsed = JSON.parse(result.summary) as { exercises?: any[] };
         setParsedSummaryData(parsed);
       } catch (e) {
         setParsedSummaryData(null);

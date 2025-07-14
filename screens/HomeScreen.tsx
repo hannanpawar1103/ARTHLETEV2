@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 import {
   View,
   Text,
@@ -45,6 +46,7 @@ import { useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import AuthContext from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -765,7 +767,21 @@ useEffect(() => {
   };
 
   //=================================
-   const userId = "6853e136a4d5b09d329515ff";
+  //  const userId = "6853e136a4d5b09d329515ff";
+   const [userId, setUserId] = useState<string | null>(null);
+const { setUser } = useContext(AuthContext);
+
+useEffect(() => {
+  const fetchUserId = async () => {
+    try {
+      const id = await AsyncStorage.getItem('tempUserId');
+      setUserId(id);
+    } catch (error) {
+      console.error('Error fetching tempUserId:', error);
+    }
+  };
+  fetchUserId();
+}, []);
 
 //   useEffect(() => {
 //   if (!userId) return;
@@ -785,6 +801,8 @@ useEffect(() => {
 //   return () => clearInterval(intervalId); // Cleanup when component unmounts
 // }, [userId]);
 
+console.log('userId', userId);
+
 
 useFocusEffect(
   useCallback(() => {
@@ -792,7 +810,9 @@ useFocusEffect(
     const fetchCredits = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/credit/get/${userId}`);
+        console.log('response', response);
         const updatedCredits = response?.data?.data?.credits ?? 0;
+        console.log('updatedCredits', updatedCredits);
         setCreditScore(updatedCredits);
         console.log('🎯 Credits fetched on screen focus:', updatedCredits);
       } catch (err) {
@@ -2661,7 +2681,7 @@ useFocusEffect(
     setIsLoading(true);
     try {
       
-      var res = await configure("public_live_a5jSYbzaDk7sgalguc");
+      var res = await configure("public_live_J2wIJ3BdzItV7gCSjI");
       console.log("Configuration successful:", res);
       setIsLoading(false);
       setDidConfig(true);
